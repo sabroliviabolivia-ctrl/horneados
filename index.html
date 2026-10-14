@@ -163,7 +163,11 @@ section { padding: 52px 20px; max-width: 1200px; margin: 0 auto }
 .carrito-item:last-child { border: none }
 .carrito-item .nombre { font-weight: 600; font-size: .92rem; display: block }
 .carrito-item .detalle { font-size: .76rem; color: #5a4a8a }
-.carrito-total { display: flex; justify-content: space-between; padding: 14px 0; border-top: 4px solid var(--tinta); font-family: var(--display); font-size: 1.3rem; color: var(--fucsia) }
+.carrito-linea { display: flex; justify-content: space-between; padding: 8px 0; font-size: .95rem; color: #3b2a6e; border-top: 2px dashed #d9cdf7 }
+.carrito-linea.total { padding-top: 14px; border-top: 4px solid var(--tinta); font-family: var(--display); font-size: 1.3rem; color: var(--fucsia) }
+.carrito-linea.envio { color: var(--azul); font-weight: 700 }
+.carrito-linea.envio.gratis { color: #0c7a3a }
+.aviso-minimo { background: #FFF3C4; border: 3px solid var(--fucsia); border-radius: 12px; padding: 10px 14px; margin: 10px 0; font-size: .85rem; color: var(--fucsia); font-weight: 600; text-align: center }
 .btn-enviar { width: 100%; padding: 14px; border-radius: 999px; border: 4px solid var(--tinta); background: var(--wsp); color: var(--tinta); font-family: var(--display); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 5px 5px 0 var(--tinta); transition: .12s }
 .btn-enviar:hover { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 var(--tinta) }
 .btn-enviar:active { transform: translate(3px,3px); box-shadow: 2px 2px 0 var(--tinta) }
@@ -171,8 +175,8 @@ section { padding: 52px 20px; max-width: 1200px; margin: 0 auto }
 .nota-envio { font-size: .8rem; text-align: center; margin-top: 12px; color: #5a4a8a }
 
 .caja label { display: block; font-size: .86rem; font-weight: 600; margin-bottom: 6px }
-.caja input, .caja textarea { width: 100%; min-width: 0; max-width: 100%; padding: 11px 14px; border-radius: 14px; border: 3px solid var(--tinta); background: var(--papel); color: var(--tinta); font-family: inherit; font-size: .95rem; margin-bottom: 14px; outline: none; transition: .15s }
-.caja input:focus, .caja textarea:focus { background: #fff; box-shadow: 4px 4px 0 var(--azul) }
+.caja input, .caja textarea, .caja select { width: 100%; min-width: 0; max-width: 100%; padding: 11px 14px; border-radius: 14px; border: 3px solid var(--tinta); background: var(--papel); color: var(--tinta); font-family: inherit; font-size: .95rem; margin-bottom: 14px; outline: none; transition: .15s }
+.caja input:focus, .caja textarea:focus, .caja select:focus { background: #fff; box-shadow: 4px 4px 0 var(--azul) }
 .caja textarea { resize: vertical; min-height: 70px }
 .fila2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px }
 @media (max-width: 520px) { .fila2 { grid-template-columns: 1fr } }
@@ -264,13 +268,16 @@ footer .copy { font-size: .78rem; margin-top: 22px; opacity: .85 }
 <section id="pedido">
   <div class="titulo">
     <h3 class="azul">Arma tu pedido</h3>
-    <p>Agrega tus productos, elige cuándo lo necesitas y envía todo a nuestro WhatsApp.</p>
+    <p>Agrega tus productos, elige tu zona de entrega y envía todo a nuestro WhatsApp.</p>
   </div>
   <div class="pedido-wrap">
     <div class="caja">
       <h4>🛒 Tu pedido</h4>
       <div class="carrito-lista" id="carritoLista"><p class="vacio">Aún no has agregado productos.</p></div>
-      <div class="carrito-total"><span>Total</span><span>Bs <span id="totalBs">0</span></span></div>
+      <div id="avisoMinimo"></div>
+      <div class="carrito-linea"><span>Subtotal</span><span>Bs <span id="subtotalBs">0</span></span></div>
+      <div class="carrito-linea envio" id="lineaEnvio" style="display:none"><span id="textoEnvio">Envío</span><span>Bs <span id="envioBs">0</span></span></div>
+      <div class="carrito-linea total"><span>Total</span><span>Bs <span id="totalBs">0</span></span></div>
       <button class="btn-enviar" id="btnEnviar" disabled>💬 Enviar pedido por WhatsApp</button>
       <p class="nota-envio">Se abrirá WhatsApp con tu pedido listo para enviar al <span data-tel>68861432</span></p>
     </div>
@@ -287,6 +294,13 @@ footer .copy { font-size: .78rem; margin-top: 22px; opacity: .85 }
           <input id="telefono" type="tel" placeholder="Ej: 68861432" autocomplete="tel">
         </div>
       </div>
+
+      <label for="anillo">🛵 Zona de entrega</label>
+      <select id="anillo">
+        <option value="1">Anillo 1 · Centro de Warnes</option>
+        <option value="2">Anillo 2 · Alrededores</option>
+      </select>
+      <p class="ayuda">Solo entregamos en el Anillo 1 y 2 de Warnes.</p>
 
       <label for="fechaEntrega">¿Para cuándo lo necesitas?</label>
       <input id="fechaEntrega" type="datetime-local">
@@ -333,72 +347,122 @@ const RAW = (file) => `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB
 const IMGS = {
   "logo":  RAW("logo-hogareno.jpg"),
   "hero1": RAW("hero-1.jpg"),
-  "hero2": RAW("cunape.jpg"),   // <-- ¡CAMBIADO! Ahora usa cunape.jpg
+  "hero2": RAW("cunape.jpg"),
   "pollo": RAW("empanada-de-pollo.jpg")
 };
 
 // =====================================================================
-//  TU GOOGLE SHEETS (método gviz — no necesita proxies)
+//  TU GOOGLE SHEETS
 // =====================================================================
 const SHEET_ID   = '1RORFaPQ04cgANe-OQFTx1phz2VUDCpB0iXSrC4dkXJg';
-const SHEET_NAME = 'productos';
+const SHEET_NAME = 'productos';   // Pestaña de productos
+const SHEET_CONFIG = 'config';    // Pestaña de configuración de envíos
+
+// =====================================================================
+//  VALORES POR DEFECTO (se usan si falla la hoja "config")
+// =====================================================================
+const ENVIO_DEFAULT = {
+  pedidoMinimo:    12,
+  anillo1:          5,
+  anillo2:          8,
+  gratisDesde:     60
+};
+
+// Objeto global que se llenará desde la hoja "config"
+let ENVIO = { ...ENVIO_DEFAULT };
 
 const CONFIG = {
   wsp: '59168861432',
   horas: 24,
-  direccion: 'Entregamos en Warnes y alrededores, Santa Cruz',
+  direccion: 'Entregamos en el Anillo 1 y 2 de Warnes, Santa Cruz',
   productos: []
 };
 
-// ============ CARGA DESDE GOOGLE SHEETS (gviz / JSON) ============
+// ============ FUNCIÓN GENÉRICA PARA LEER UNA HOJA DE GOOGLE SHEETS ============
+async function leerHoja(sheetName) {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status} en hoja "${sheetName}"`);
+  let text = await res.text();
+  const first = text.indexOf('{');
+  const last  = text.lastIndexOf('}');
+  if (first === -1 || last === -1) throw new Error('Respuesta no válida de Google');
+  const json = JSON.parse(text.substring(first, last + 1));
+  return json?.table?.rows || [];
+}
+
+// ============ CARGAR PRODUCTOS ============
 async function cargarProductos() {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
-
   try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    let text = await res.text();
+    const rows = await leerHoja(SHEET_NAME);
+    if (rows.length === 0) throw new Error('La hoja de productos está vacía.');
 
-    const first = text.indexOf('{');
-    const last  = text.lastIndexOf('}');
-    if (first === -1 || last === -1) throw new Error('Respuesta no válida de Google');
-    const json = JSON.parse(text.substring(first, last + 1));
+    CONFIG.productos = rows.map(r => {
+      const c = r.c || [];
+      return {
+        id:     c[0]?.v != null ? String(c[0].v).trim() : '',
+        nombre: c[1]?.v != null ? String(c[1].v).trim() : '',
+        desc:   c[2]?.v != null ? String(c[2].v).trim() : '',
+        precio: parseFloat(c[3]?.v) || 0,
+        badge:  c[4]?.v != null ? String(c[4].v).trim() : '',
+        img:    c[5]?.v != null ? String(c[5].v).trim() : '',
+        activo: (() => {
+          const a = c[6]?.v;
+          if (typeof a === 'boolean') return a;
+          return String(a).toUpperCase() === 'TRUE' || a === 1 || a === '1';
+        })()
+      };
+    }).filter(p => p.activo && p.id && p.nombre);
 
-    const rows = json?.table?.rows || [];
-    if (rows.length === 0) throw new Error('La hoja no tiene filas de datos.');
-
-    CONFIG.productos = rows
-      .map(r => {
-        const c = r.c || [];
-        return {
-          id:     c[0]?.v != null ? String(c[0].v).trim() : '',
-          nombre: c[1]?.v != null ? String(c[1].v).trim() : '',
-          desc:   c[2]?.v != null ? String(c[2].v).trim() : '',
-          precio: parseFloat(c[3]?.v) || 0,
-          badge:  c[4]?.v != null ? String(c[4].v).trim() : '',
-          img:    c[5]?.v != null ? String(c[5].v).trim() : '',
-          activo: (() => {
-            const a = c[6]?.v;
-            if (typeof a === 'boolean') return a;
-            return String(a).toUpperCase() === 'TRUE' || a === 1 || a === '1';
-          })()
-        };
-      })
-      .filter(p => p.activo && p.id && p.nombre);
-
-    if (CONFIG.productos.length === 0) {
-      throw new Error('No hay productos activos en la hoja.');
-    }
-
-    console.log(`✅ ${CONFIG.productos.length} productos cargados desde Google Sheets`);
+    if (CONFIG.productos.length === 0) throw new Error('No hay productos activos.');
+    console.log(`✅ ${CONFIG.productos.length} productos cargados`);
     renderMenu();
     renderCarrito();
-
   } catch (err) {
-    console.error('Error al cargar productos desde Google Sheets:', err);
+    console.error('Error al cargar productos:', err);
     document.getElementById('gridProductos').innerHTML =
       '<p class="vacio">No se pudo cargar el menú. Verifica que la hoja esté publicada y recarga la página.</p>';
   }
+}
+
+// ============ CARGAR TARIFAS DE ENVÍO ============
+async function cargarEnvio() {
+  try {
+    const rows = await leerHoja(SHEET_CONFIG);
+    if (rows.length === 0) throw new Error('La hoja de configuración está vacía.');
+
+    // Formato esperado: col A = clave, col B = valor
+    const dict = {};
+    rows.forEach(r => {
+      const clave = r.c?.[0]?.v != null ? String(r.c[0].v).trim() : '';
+      const valor = r.c?.[1]?.v;
+      if (clave && valor != null) dict[clave] = valor;
+    });
+
+    // Actualizamos ENVIO con los valores de la hoja (si existen)
+    ENVIO.pedidoMinimo = parseFloat(dict.pedidoMinimo) || ENVIO_DEFAULT.pedidoMinimo;
+    ENVIO.anillo1      = parseFloat(dict.anillo1)      || ENVIO_DEFAULT.anillo1;
+    ENVIO.anillo2      = parseFloat(dict.anillo2)      || ENVIO_DEFAULT.anillo2;
+    ENVIO.gratisDesde  = parseFloat(dict.gratisDesde)  || ENVIO_DEFAULT.gratisDesde;
+
+    console.log('✅ Tarifas de envío cargadas:', ENVIO);
+    // Actualizamos el texto del selector de anillo
+    actualizarTextoAnillos();
+  } catch (err) {
+    console.warn('⚠️ No se pudo cargar la hoja "config". Usando valores por defecto.', err);
+    ENVIO = { ...ENVIO_DEFAULT };
+    actualizarTextoAnillos();
+  }
+}
+
+// Actualiza las etiquetas de las opciones del selector según las tarifas
+function actualizarTextoAnillos() {
+  const sel = document.getElementById('anillo');
+  if (!sel) return;
+  const opt1 = sel.querySelector('option[value="1"]');
+  const opt2 = sel.querySelector('option[value="2"]');
+  if (opt1) opt1.textContent = `Anillo 1 · Centro de Warnes (Bs ${ENVIO.anillo1})`;
+  if (opt2) opt2.textContent = `Anillo 2 · Alrededores (Bs ${ENVIO.anillo2})`;
 }
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
@@ -449,6 +513,20 @@ function renderMenu() {
     </div>`).join('');
 }
 
+// ============ CÁLCULO DE ENVÍO ============
+function calcularEnvio(subtotal) {
+  const anillo = document.getElementById('anillo').value;
+  if (subtotal >= ENVIO.gratisDesde) {
+    return { costo: 0, texto: 'Envío (GRATIS 🎉)', gratis: true, anillo };
+  }
+  if (subtotal < ENVIO.pedidoMinimo) {
+    return { costo: null, texto: 'Envío', gratis: false, anillo };
+  }
+  if (anillo === '1') return { costo: ENVIO.anillo1, texto: 'Envío (Anillo 1)', gratis: false, anillo };
+  if (anillo === '2') return { costo: ENVIO.anillo2, texto: 'Envío (Anillo 2)', gratis: false, anillo };
+  return { costo: 0, texto: 'Envío', gratis: false, anillo };
+}
+
 // ============ CARRITO ============
 let carrito = {};
 
@@ -457,18 +535,25 @@ function renderCarrito() {
   const ids = Object.keys(carrito).filter(id => productosActivos().find(p => p.id === id));
   const btn = document.getElementById('btnEnviar');
   const flot = document.getElementById('carritoFlotante');
+  const aviso = document.getElementById('avisoMinimo');
+  const lineaEnvio = document.getElementById('lineaEnvio');
+
   if (!ids.length) {
     lista.innerHTML = '<p class="vacio">Aún no has agregado productos.</p>';
+    document.getElementById('subtotalBs').textContent = '0';
     document.getElementById('totalBs').textContent = '0';
     document.getElementById('badgeFlotante').textContent = '0';
+    aviso.innerHTML = '';
+    lineaEnvio.style.display = 'none';
     btn.disabled = true; flot.classList.remove('visible');
     return;
   }
-  let total = 0, cant = 0;
+
+  let subtotal = 0, cant = 0;
   lista.innerHTML = ids.map(id => {
     const p = CONFIG.productos.find(x => x.id === id);
     const c = carrito[id]; const sub = p.precio * c;
-    total += sub; cant += c;
+    subtotal += sub; cant += c;
     return `<div class="carrito-item">
       <div><span class="nombre">${esc(p.nombre)}</span><span class="detalle">Bs ${fmt(p.precio)} c/u · Subtotal Bs ${fmt(sub)}</span></div>
       <div class="stepper">
@@ -478,10 +563,40 @@ function renderCarrito() {
       </div>
     </div>`;
   }).join('');
-  document.getElementById('totalBs').textContent = fmt(total);
+
+  document.getElementById('subtotalBs').textContent = fmt(subtotal);
   document.getElementById('badgeFlotante').textContent = cant;
-  btn.disabled = false; flot.classList.add('visible');
+
+  const env = calcularEnvio(subtotal);
+  let total = subtotal;
+
+  if (env.costo === null) {
+    lineaEnvio.style.display = 'none';
+    aviso.innerHTML = `<div class="aviso-minimo">⚠️ Pedido mínimo Bs ${fmt(ENVIO.pedidoMinimo)} para delivery. Te faltan Bs ${fmt(ENVIO.pedidoMinimo - subtotal)}.</div>`;
+    btn.disabled = true;
+    document.getElementById('totalBs').textContent = fmt(subtotal);
+  } else {
+    aviso.innerHTML = '';
+    if (env.gratis) {
+      lineaEnvio.style.display = 'flex';
+      lineaEnvio.classList.add('gratis');
+      document.getElementById('textoEnvio').textContent = env.texto;
+      document.getElementById('envioBs').textContent = '0';
+    } else {
+      lineaEnvio.style.display = 'flex';
+      lineaEnvio.classList.remove('gratis');
+      document.getElementById('textoEnvio').textContent = env.texto;
+      document.getElementById('envioBs').textContent = fmt(env.costo);
+      total = subtotal + env.costo;
+    }
+    document.getElementById('totalBs').textContent = fmt(total);
+    btn.disabled = false;
+  }
+
+  flot.classList.add('visible');
 }
+
+document.getElementById('anillo').addEventListener('change', renderCarrito);
 
 const leerCant = v => Math.max(0, Math.floor(Number(v) || 0));
 
@@ -527,6 +642,7 @@ document.getElementById('btnEnviar').addEventListener('click', () => {
   const fechaStr = document.getElementById('fechaEntrega').value;
   const direccion = document.getElementById('direccion').value.trim();
   const notas = document.getElementById('notas').value.trim();
+  const anillo = document.getElementById('anillo').value;
 
   const falla = (msg, id) => { alert(msg); const el = document.getElementById(id); if (el) el.focus(); };
   if (!cliente) return falla('Escribe tu nombre.', 'cliente');
@@ -534,26 +650,34 @@ document.getElementById('btnEnviar').addEventListener('click', () => {
   if (!fechaStr) return falla('Elige la fecha y hora en que necesitas tu pedido.', 'fechaEntrega');
   const fecha = new Date(fechaStr);
   if (isNaN(fecha) || fecha < minimoFecha()) {
-    return falla(`El pedido debe hacerse con al menos ${CONFIG.horas} horas de anticipación. Elige una fecha y hora posterior a ${minimoFecha().toLocaleString('es-BO', { dateStyle: 'medium', timeStyle: 'short' })}.`, 'fechaEntrega');
+    return falla(`El pedido debe hacerse con al menos ${CONFIG.horas} horas de anticipación.`, 'fechaEntrega');
   }
   if (!direccion) return falla('Necesitamos tu dirección para llevarte el pedido.', 'direccion');
   const ids = Object.keys(carrito).filter(id => CONFIG.productos.find(p => p.id === id));
   if (!ids.length) return alert('Agrega al menos un producto a tu pedido.');
 
-  let total = 0;
+  let subtotal = 0;
   let m = '🥟 *NUEVO PEDIDO — Hogareño* 🥟\n\n';
   m += '👤 *Cliente:* ' + cliente + '\n';
   m += '📞 *Teléfono:* ' + telefono + '\n';
   m += '📅 *Para el:* ' + fecha.toLocaleString('es-BO', { dateStyle: 'full', timeStyle: 'short' }) + '\n';
-  m += '🛵 *Entrega:* A domicilio\n';
+  m += '🛵 *Zona:* Anillo ' + anillo + ' de Warnes\n';
   m += '🏠 *Dirección:* ' + direccion + '\n';
   m += '\n🛒 *Productos:*\n';
   ids.forEach(id => {
     const p = CONFIG.productos.find(x => x.id === id);
-    const sub = p.precio * carrito[id]; total += sub;
+    const sub = p.precio * carrito[id]; subtotal += sub;
     m += `• ${carrito[id]} x ${p.nombre} — Bs ${fmt(sub)}\n`;
   });
-  m += '\n💰 *TOTAL: Bs ' + fmt(total) + '*\n';
+
+  const env = calcularEnvio(subtotal);
+  m += '\n📦 *Subtotal:* Bs ' + fmt(subtotal) + '\n';
+  if (env.costo === 0) {
+    m += '🛵 *Envío:* GRATIS 🎉\n';
+  } else if (env.costo) {
+    m += '🛵 *Envío (Anillo ' + anillo + '):* Bs ' + fmt(env.costo) + '\n';
+  }
+  m += '💰 *TOTAL: Bs ' + fmt(subtotal + (env.costo || 0)) + '*\n';
   if (notas) m += '\n📝 *Notas:* ' + notas + '\n';
   m += '\n¡Gracias por preferirnos! 🧡';
   window.open(wspLink(m), '_blank');
@@ -564,7 +688,8 @@ document.getElementById('anio').textContent = new Date().getFullYear();
 
 // ============ INICIO ============
 aplicarTextos();
-cargarProductos();
+cargarEnvio();       // Primero cargamos las tarifas
+cargarProductos();   // Y en paralelo los productos
 renderCarrito();
 </script>
 </body>
