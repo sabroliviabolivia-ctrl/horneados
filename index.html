@@ -6,8 +6,6 @@
 <title>Hogareño · Horneados con entrega a domicilio en Warnes</title>
 <meta name="description" content="Empanadas al horno, cuñapé, café y refrescos desde Bs 3. Entrega a domicilio en Warnes, Santa Cruz. Pedidos con 24 horas de anticipación al 68861432.">
 <meta name="theme-color" content="#6C2BF5">
-
-<!-- Open Graph para WhatsApp -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Hogareño">
 <meta property="og:url" content="https://sabroliviabolivia-ctrl.github.io/horneados/">
@@ -241,8 +239,8 @@ footer .copy { font-size: .78rem; margin-top: 22px; opacity: .85 }
   </div>
   <div class="hero-fotos">
     <div class="sello"><div><small>DESDE</small><b>Bs <span data-minprecio>3</span></b><small>c/u</small></div></div>
-    <img class="grande" data-img="hero1" alt="Empanadas al horno" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiB2aWV3Qm94PSIwIDAgNDAwIDMwMCI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiM3RkUzRkYiLz48dGV4dCB4PSIyMDAiIHk9IjE1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMUUwQjREIj7wn6WfPC90ZXh0Pjwvc3ZnPg=='">
-    <img class="chica c1" data-img="cunape" alt="Cuñapés">
+    <img class="grande" data-img="hero1" alt="Empanadas al horno">
+    <img class="chica c1" data-img="hero2" alt="Cuñapés">
     <img class="chica c2" data-img="pollo" alt="Empanadas de pollo al horno">
   </div>
 </div>
@@ -324,42 +322,82 @@ footer .copy { font-size: .78rem; margin-top: 22px; opacity: .85 }
 <button class="carrito-flotante" id="carritoFlotante">🛒 Ver pedido <span class="badge-num" id="badgeFlotante">0</span></button>
 
 <script>
-// ============ IMÁGENES DESDE TU REPOSITORIO GITHUB ============
+// ============ IMÁGENES FIJAS (logo y hero) DESDE TU GITHUB ============
 const GITHUB_USER = 'sabroliviabolivia-ctrl';
 const GITHUB_REPO = 'horneados';
 const GITHUB_BRANCH = 'main';
 const RAW = (file) => `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${file}`;
 
 const IMGS = {
-  "queso":    RAW("empanada-deq-queso.jpg"),
-  "pollo":    RAW("empanada-de-pollo.jpg"),
-  "cunape":   RAW("cunape.jpg"),
-  "cafe":     RAW("cafe.jpg"),
-  "refresco": RAW("refresco-de-frutas.jpg"),
-  "logo":     RAW("logo-hogareno.jpg"),
-  "hero1":    RAW("hero-1.jpg"),
-  "hero2":    RAW("hero-2.jpg")
+  "logo":  RAW("logo-hogareno.jpg"),
+  "hero1": RAW("hero-1.jpg"),
+  "hero2": RAW("hero-2.jpg"),
+  "pollo": RAW("empanada-de-pollo.jpg") // para la foto del hero
 };
 
 // =====================================================================
-//  CONFIGURACIÓN — aquí cambias precios, nombres, WhatsApp y más.
+//  URL DE TU GOOGLE SHEETS PUBLICADA COMO CSV
 // =====================================================================
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRyn3cRZR_4F92FSKz-AkZJHYTl6OYKohdQBWl8VKLg20QEihXe833aitJGbYaia-lSZhttDRyEJivk/pub?gid=0&single=true&output=csv';
+
 const CONFIG = {
-  wsp: '59168861432',                 // WhatsApp con código de país (591 = Bolivia)
-  horas: 24,                          // horas de anticipación para pedir
+  wsp: '59168861432',
+  horas: 24,
   direccion: 'Entregamos en Warnes y alrededores, Santa Cruz',
-  productos: [
-    { id: 'empanada-queso', emoji: '🧀', nombre: 'Empanada de Queso al Horno', desc: 'Suave por dentro, crujiente por fuera, con queso fundido.', precio: 3, badge: 'Favorita', img: 'queso', activo: true },
-    { id: 'empanada-pollo', emoji: '🍗', nombre: 'Empanada de Pollo al Horno', desc: 'Jugoso relleno de pollo con verduras y sazón criolla.', precio: 3, badge: '', img: 'pollo', activo: true },
-    { id: 'cunape', emoji: '🧆', nombre: 'Cuñapé', desc: 'El clásico cuñapé cruceño: tradición y sabor.', precio: 3, badge: 'Tradicional', img: 'cunape', activo: true },
-    { id: 'cafe', emoji: '☕', nombre: 'Café', desc: 'Caliente, aromático y recién preparado. El complemento perfecto.', precio: 3, badge: '', img: 'cafe', activo: true },
-    { id: 'refresco', emoji: '🥤', nombre: 'Refresco de Frutas de Temporada', desc: 'Natural, refrescante y delicioso, con fruta fresca del oriente.', precio: 3, badge: 'Natural', img: 'refresco', activo: true }
-  ]
+  productos: []
 };
+
+// ============ PARSEO DE CSV ============
+function parseCSV(csvText) {
+  const lines = csvText.trim().split('\n').map(line => line.trim()).filter(Boolean);
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+  const data = [];
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(',').map(v => v.trim());
+    if (values.length === headers.length) {
+      const obj = {};
+      headers.forEach((header, index) => { obj[header] = values[index]; });
+      data.push(obj);
+    }
+  }
+  return data;
+}
+
+// ============ CARGA DESDE GOOGLE SHEETS ============
+async function cargarProductos() {
+  try {
+    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+    const response = await fetch(proxyUrl + encodeURIComponent(CSV_URL));
+    if (!response.ok) throw new Error('No se pudo obtener la hoja de cálculo.');
+    const csvText = await response.text();
+
+    const productosData = parseCSV(csvText);
+    if (productosData.length === 0) throw new Error('La hoja está vacía o mal formateada.');
+
+    CONFIG.productos = productosData
+      .map(p => ({
+        id: p.id,
+        nombre: p.nombre,
+        desc: p.descripcion,
+        precio: parseFloat(p.precio) || 0,
+        badge: p.badge,
+        img: p.img, // URL completa desde Sheets
+        activo: String(p.activo).toUpperCase() === 'TRUE' || p.activo === '1'
+      }))
+      .filter(p => p.activo);
+
+    renderMenu();
+    renderCarrito();
+
+  } catch (error) {
+    console.error('Error al cargar los productos:', error);
+    document.getElementById('gridProductos').innerHTML = '<p class="vacio">No se pudo cargar el menú. Inténtalo de nuevo más tarde.</p>';
+  }
+}
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 const fmt = n => Number.isInteger(n) ? String(n) : n.toFixed(2);
-const imgSrc = p => p.img ? (IMGS[p.img] || p.img) : '';
 const productosActivos = () => CONFIG.productos.filter(p => p.activo !== false);
 const telVisible = () => String(CONFIG.wsp).replace(/^591/, '');
 const wspLink = txt => 'https://wa.me/' + String(CONFIG.wsp).replace(/\D/g, '') + (txt ? '?text=' + encodeURIComponent(txt) : '');
@@ -378,7 +416,7 @@ function aplicarTextos() {
   actualizarMinFecha();
 }
 
-// ============ FECHA MÍNIMA (ANTICIPACIÓN) ============
+// ============ FECHA MÍNIMA ============
 const p2 = n => String(n).padStart(2, '0');
 const aLocalInput = d => `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}`;
 const minimoFecha = () => new Date(Date.now() + Number(CONFIG.horas) * 3600 * 1000);
@@ -389,7 +427,7 @@ document.getElementById('fechaEntrega').addEventListener('focus', actualizarMinF
 function renderMenu() {
   document.getElementById('gridProductos').innerHTML = productosActivos().map(p => `
     <div class="producto">
-      <div class="foto">${imgSrc(p) ? `<img src="${esc(imgSrc(p))}" alt="${esc(p.nombre)}" loading="lazy" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\\'emoji\\'>${esc(p.emoji || '🥟')}</span>'">` : `<span class="emoji">${esc(p.emoji || '🥟')}</span>`}</div>
+      <div class="foto"><img src="${esc(p.img)}" alt="${esc(p.nombre)}" loading="lazy"></div>
       <div class="cuerpo">
         <h4>${esc(p.nombre)}</h4>
         <p class="desc">${esc(p.desc)}</p>
@@ -407,7 +445,7 @@ function renderMenu() {
 }
 
 // ============ CARRITO ============
-let carrito = {}; // id -> cantidad
+let carrito = {};
 
 function renderCarrito() {
   const lista = document.getElementById('carritoLista');
@@ -427,7 +465,7 @@ function renderCarrito() {
     const c = carrito[id]; const sub = p.precio * c;
     total += sub; cant += c;
     return `<div class="carrito-item">
-      <div><span class="nombre">${esc(p.emoji || '')} ${esc(p.nombre)}</span><span class="detalle">Bs ${fmt(p.precio)} c/u · Subtotal Bs ${fmt(sub)}</span></div>
+      <div><span class="nombre">${esc(p.nombre)}</span><span class="detalle">Bs ${fmt(p.precio)} c/u · Subtotal Bs ${fmt(sub)}</span></div>
       <div class="stepper">
         <button type="button" data-c="-" data-id="${esc(id)}" aria-label="Menos">−</button>
         <input type="number" min="0" value="${c}" inputmode="numeric" data-cinput="${esc(id)}" aria-label="Cantidad">
@@ -521,7 +559,7 @@ document.getElementById('anio').textContent = new Date().getFullYear();
 
 // ============ INICIO ============
 aplicarTextos();
-renderMenu();
+cargarProductos();
 renderCarrito();
 </script>
 </body>
