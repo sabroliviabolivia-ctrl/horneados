@@ -96,7 +96,7 @@ nav a:hover { background: var(--fucsia); color: #fff; box-shadow: 3px 3px 0 var(
 .hero-fotos::before { content: ''; position: absolute; inset: -6px -4px -8px 8px; background: var(--violeta); border: 4px solid var(--tinta); border-radius: 48% 52% 45% 55% / 55% 45% 55% 45%; z-index: 0 }
 .hero-fotos img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: cover; border: 4px solid var(--tinta); border-radius: 22px; display: block }
 .hero-fotos .grande { grid-column: 1 / -1; aspect-ratio: 4/3; object-position: center top; box-shadow: 8px 8px 0 var(--fucsia-vivo); transform: rotate(-2deg) }
-.hero-fotos .chica { aspect-ratio: 1/1; object-fit: contain; background: var(--papel); padding: 6px }
+.hero-fotos .chica { aspect-ratio: 1/1; object-fit: cover; object-position: center }
 .hero-fotos .c1 { box-shadow: 8px 8px 0 var(--azul); transform: rotate(2deg) }
 .hero-fotos .c2 { box-shadow: 8px 8px 0 var(--amarillo); transform: rotate(-1.5deg) }
 .sello { position: absolute; z-index: 2; right: -8px; top: -24px; width: 118px; height: 118px; filter: drop-shadow(4px 4px 0 var(--tinta)); transform: rotate(12deg) }
