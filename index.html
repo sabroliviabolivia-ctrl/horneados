@@ -112,6 +112,14 @@ section { padding: 52px 20px; max-width: 1200px; margin: 0 auto }
 .titulo h3.rosa { background: var(--fucsia); color: #fff; box-shadow: 6px 6px 0 var(--azul); transform: rotate(-1deg) }
 .titulo p { max-width: 620px; margin: 22px auto 0; font-size: 1rem; color: #2c1668 }
 
+/* AVISO DE ENVÍO */
+.aviso-envio { background: #fff; border: 4px dashed var(--violeta); border-radius: 20px; padding: 20px 24px; max-width: 780px; margin: 0 auto 40px; text-align: center; box-shadow: 6px 6px 0 var(--azul) }
+.aviso-envio h4 { font-family: var(--display); font-weight: 400; color: var(--violeta); font-size: 1.25rem; margin-bottom: 8px }
+.aviso-envio p { font-size: .95rem; color: #3b2a6e; margin-bottom: 4px }
+.aviso-envio .tarifas { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 14px }
+.aviso-envio .tarifas span { background: var(--papel); border: 3px solid var(--tinta); border-radius: 999px; padding: 4px 14px; font-weight: 600; font-size: .85rem }
+.aviso-envio .tarifas span.vecino { background: var(--amarillo) }
+
 /* PRODUCTOS */
 .grid-productos { display: grid; grid-template-columns: repeat(auto-fit, minmax(245px, 1fr)); gap: 30px }
 .producto { --c: var(--fucsia-vivo); background: #fff; border: 4px solid var(--tinta); border-radius: 26px; overflow: hidden; position: relative; display: flex; flex-direction: column; box-shadow: 8px 8px 0 var(--c); transition: .15s }
@@ -122,7 +130,6 @@ section { padding: 52px 20px; max-width: 1200px; margin: 0 auto }
 .producto:hover { transform: translate(-4px,-4px); box-shadow: 12px 12px 0 var(--c) }
 .producto .foto { aspect-ratio: 1/1; overflow: hidden; background: var(--cian); display: grid; place-items: center; border-bottom: 4px solid var(--tinta) }
 .producto .foto img { width: 100%; height: 100%; object-fit: cover; display: block }
-.producto .foto .emoji { font-size: 4.5rem }
 .producto .cuerpo { padding: 18px; display: flex; flex-direction: column; gap: 10px; flex: 1 }
 .producto h4 { font-family: var(--display); font-weight: 400; font-size: 1.2rem; line-height: 1.15 }
 .producto .desc { font-size: .88rem; color: #3b2a6e; flex: 1 }
@@ -254,6 +261,19 @@ footer .copy { font-size: .78rem; margin-top: 22px; opacity: .85 }
     <h3>Nuestro menú casero</h3>
     <p>Todo preparado al horno con ingredientes frescos de la región. Elige cuántas unidades necesitas de cada uno.</p>
   </div>
+
+  <div class="aviso-envio">
+    <h4>🛵 Nuestras tarifas de entrega</h4>
+    <p>Hacemos delivery en Warnes. Elige tu zona al hacer el pedido.</p>
+    <div class="tarifas">
+      <span class="vecino">🏠 Vecino (misma cuadra): <strong>GRATIS</strong></span>
+      <span>📍 Anillo 1 · Centro: <strong id="tarifaA1">Bs 5</strong></span>
+      <span>📍 Anillo 2 · Alrededores: <strong id="tarifaA2">Bs 8</strong></span>
+      <span>🎉 Envío GRATIS desde <strong id="tarifaGratis">Bs 60</strong></span>
+    </div>
+    <p style="margin-top:12px;font-size:.85rem;color:#5a4a8a">¿Estás fuera del Anillo 2? Igual puedes enviar tu pedido y coordinamos el envío por WhatsApp.</p>
+  </div>
+
   <div class="grid-productos" id="gridProductos">
     <p class="vacio">Cargando productos...</p>
   </div>
@@ -297,10 +317,12 @@ footer .copy { font-size: .78rem; margin-top: 22px; opacity: .85 }
 
       <label for="anillo">🛵 Zona de entrega</label>
       <select id="anillo">
-        <option value="1">Anillo 1 · Centro de Warnes</option>
+        <option value="0">🏠 Vecino · Misma cuadra/calle (GRATIS)</option>
+        <option value="1" selected>Anillo 1 · Centro de Warnes</option>
         <option value="2">Anillo 2 · Alrededores</option>
+        <option value="3">📞 Fuera del Anillo 2 · Envío a consultar</option>
       </select>
-      <p class="ayuda">Solo entregamos en el Anillo 1 y 2 de Warnes.</p>
+      <p class="ayuda">Elige la zona más cercana. Si estás fuera del Anillo 2, consultamos el envío por WhatsApp.</p>
 
       <label for="fechaEntrega">¿Para cuándo lo necesitas?</label>
       <input id="fechaEntrega" type="datetime-local">
@@ -310,8 +332,8 @@ footer .copy { font-size: .78rem; margin-top: 22px; opacity: .85 }
       <input id="direccion" type="text" placeholder="Ej: Calle Warnes #123, zona centro">
       <p class="ayuda">Indícanos la dirección exacta o una referencia clara para llegar.</p>
 
-      <label for="notas">Notas adicionales (opcional)</label>
-      <textarea id="notas" placeholder="Alguna indicación especial..."></textarea>
+      <label for="notas">¿Alguna consulta o pedido especial?</label>
+      <textarea id="notas" placeholder="Ej: ¿me haces descuento?, ¿me cobras menos el envío?, sin cebolla, etc."></textarea>
     </div>
   </div>
 </section>
@@ -338,7 +360,7 @@ footer .copy { font-size: .78rem; margin-top: 22px; opacity: .85 }
 <button class="carrito-flotante" id="carritoFlotante">🛒 Ver pedido <span class="badge-num" id="badgeFlotante">0</span></button>
 
 <script>
-// ============ IMÁGENES FIJAS (logo y hero) DESDE TU GITHUB ============
+// ============ IMÁGENES FIJAS ============
 const GITHUB_USER = 'sabroliviabolivia-ctrl';
 const GITHUB_REPO = 'horneados';
 const GITHUB_BRANCH = 'main';
@@ -351,34 +373,31 @@ const IMGS = {
   "pollo": RAW("empanada-de-pollo.jpg")
 };
 
-// =====================================================================
-//  TU GOOGLE SHEETS
-// =====================================================================
-const SHEET_ID   = '1RORFaPQ04cgANe-OQFTx1phz2VUDCpB0iXSrC4dkXJg';
-const SHEET_NAME = 'productos';   // Pestaña de productos
-const SHEET_CONFIG = 'config';    // Pestaña de configuración de envíos
+// ============ GOOGLE SHEETS ============
+const SHEET_ID     = '1RORFaPQ04cgANe-OQFTx1phz2VUDCpB0iXSrC4dkXJg';
+const SHEET_NAME   = 'productos';
+const SHEET_CONFIG = 'config';
 
-// =====================================================================
-//  VALORES POR DEFECTO (se usan si falla la hoja "config")
-// =====================================================================
+// ============ VALORES POR DEFECTO ============
 const ENVIO_DEFAULT = {
-  pedidoMinimo:    12,
-  anillo1:          5,
-  anillo2:          8,
-  gratisDesde:     60
+  pedidoMinimo:  12,
+  minimoVecino:   3,
+  anillo0:        0,
+  anillo1:        5,
+  anillo2:        8,
+  gratisDesde:   60
 };
 
-// Objeto global que se llenará desde la hoja "config"
 let ENVIO = { ...ENVIO_DEFAULT };
 
 const CONFIG = {
   wsp: '59168861432',
   horas: 24,
-  direccion: 'Entregamos en el Anillo 1 y 2 de Warnes, Santa Cruz',
+  direccion: 'Entregamos en Warnes · Anillo 1, Anillo 2 y vecinos',
   productos: []
 };
 
-// ============ FUNCIÓN GENÉRICA PARA LEER UNA HOJA DE GOOGLE SHEETS ============
+// ============ LEER HOJA ============
 async function leerHoja(sheetName) {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
   const res = await fetch(url);
@@ -431,7 +450,6 @@ async function cargarEnvio() {
     const rows = await leerHoja(SHEET_CONFIG);
     if (rows.length === 0) throw new Error('La hoja de configuración está vacía.');
 
-    // Formato esperado: col A = clave, col B = valor
     const dict = {};
     rows.forEach(r => {
       const clave = r.c?.[0]?.v != null ? String(r.c[0].v).trim() : '';
@@ -439,30 +457,38 @@ async function cargarEnvio() {
       if (clave && valor != null) dict[clave] = valor;
     });
 
-    // Actualizamos ENVIO con los valores de la hoja (si existen)
     ENVIO.pedidoMinimo = parseFloat(dict.pedidoMinimo) || ENVIO_DEFAULT.pedidoMinimo;
+    ENVIO.minimoVecino = parseFloat(dict.minimoVecino) || ENVIO_DEFAULT.minimoVecino;
+    ENVIO.anillo0      = parseFloat(dict.anillo0)      || ENVIO_DEFAULT.anillo0;
     ENVIO.anillo1      = parseFloat(dict.anillo1)      || ENVIO_DEFAULT.anillo1;
     ENVIO.anillo2      = parseFloat(dict.anillo2)      || ENVIO_DEFAULT.anillo2;
     ENVIO.gratisDesde  = parseFloat(dict.gratisDesde)  || ENVIO_DEFAULT.gratisDesde;
 
     console.log('✅ Tarifas de envío cargadas:', ENVIO);
-    // Actualizamos el texto del selector de anillo
-    actualizarTextoAnillos();
+    actualizarTextosEnvio();
   } catch (err) {
     console.warn('⚠️ No se pudo cargar la hoja "config". Usando valores por defecto.', err);
     ENVIO = { ...ENVIO_DEFAULT };
-    actualizarTextoAnillos();
+    actualizarTextosEnvio();
   }
 }
 
-// Actualiza las etiquetas de las opciones del selector según las tarifas
-function actualizarTextoAnillos() {
+function actualizarTextosEnvio() {
   const sel = document.getElementById('anillo');
-  if (!sel) return;
-  const opt1 = sel.querySelector('option[value="1"]');
-  const opt2 = sel.querySelector('option[value="2"]');
-  if (opt1) opt1.textContent = `Anillo 1 · Centro de Warnes (Bs ${ENVIO.anillo1})`;
-  if (opt2) opt2.textContent = `Anillo 2 · Alrededores (Bs ${ENVIO.anillo2})`;
+  if (sel) {
+    const opt0 = sel.querySelector('option[value="0"]');
+    const opt1 = sel.querySelector('option[value="1"]');
+    const opt2 = sel.querySelector('option[value="2"]');
+    if (opt0) opt0.textContent = `🏠 Vecino · Misma cuadra/calle (${ENVIO.anillo0 === 0 ? 'GRATIS' : 'Bs ' + ENVIO.anillo0})`;
+    if (opt1) opt1.textContent = `Anillo 1 · Centro de Warnes (Bs ${ENVIO.anillo1})`;
+    if (opt2) opt2.textContent = `Anillo 2 · Alrededores (Bs ${ENVIO.anillo2})`;
+  }
+  const a1 = document.getElementById('tarifaA1');
+  const a2 = document.getElementById('tarifaA2');
+  const aG = document.getElementById('tarifaGratis');
+  if (a1) a1.textContent = 'Bs ' + ENVIO.anillo1;
+  if (a2) a2.textContent = 'Bs ' + ENVIO.anillo2;
+  if (aG) aG.textContent = 'Bs ' + ENVIO.gratisDesde;
 }
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
@@ -485,7 +511,6 @@ function aplicarTextos() {
   actualizarMinFecha();
 }
 
-// ============ FECHA MÍNIMA ============
 const p2 = n => String(n).padStart(2, '0');
 const aLocalInput = d => `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}`;
 const minimoFecha = () => new Date(Date.now() + Number(CONFIG.horas) * 3600 * 1000);
@@ -516,9 +541,26 @@ function renderMenu() {
 // ============ CÁLCULO DE ENVÍO ============
 function calcularEnvio(subtotal) {
   const anillo = document.getElementById('anillo').value;
+
+  // 📞 Fuera de cobertura → precio a consultar por WhatsApp
+  if (anillo === '3') {
+    return { costo: null, texto: 'Envío a consultar', gratis: false, anillo, aConsultar: true };
+  }
+
   if (subtotal >= ENVIO.gratisDesde) {
     return { costo: 0, texto: 'Envío (GRATIS 🎉)', gratis: true, anillo };
   }
+
+  if (anillo === '0') {
+    if (subtotal < ENVIO.minimoVecino) {
+      return { costo: null, texto: 'Envío', gratis: false, anillo, esVecino: true };
+    }
+    if (ENVIO.anillo0 === 0) {
+      return { costo: 0, texto: 'Envío Vecino (GRATIS 🏠)', gratis: true, anillo };
+    }
+    return { costo: ENVIO.anillo0, texto: 'Envío Vecino', gratis: false, anillo };
+  }
+
   if (subtotal < ENVIO.pedidoMinimo) {
     return { costo: null, texto: 'Envío', gratis: false, anillo };
   }
@@ -570,9 +612,23 @@ function renderCarrito() {
   const env = calcularEnvio(subtotal);
   let total = subtotal;
 
-  if (env.costo === null) {
+  if (env.aConsultar) {
+    // Fuera de cobertura → permitimos pedir, precio a definir por WhatsApp
+    aviso.innerHTML = `<div class="aviso-minimo" style="background:#E6EDFF;border-color:var(--violeta);color:var(--violeta)">
+      📞 Tu zona está fuera del Anillo 2.<br>
+      Igual puedes enviar tu pedido y coordinamos el costo de envío por WhatsApp.
+    </div>`;
+    lineaEnvio.style.display = 'flex';
+    lineaEnvio.classList.add('gratis');
+    document.getElementById('textoEnvio').textContent = 'Envío (a consultar)';
+    document.getElementById('envioBs').textContent = '—';
+    document.getElementById('totalBs').textContent = fmt(subtotal);
+    btn.disabled = false;
+  } else if (env.costo === null) {
     lineaEnvio.style.display = 'none';
-    aviso.innerHTML = `<div class="aviso-minimo">⚠️ Pedido mínimo Bs ${fmt(ENVIO.pedidoMinimo)} para delivery. Te faltan Bs ${fmt(ENVIO.pedidoMinimo - subtotal)}.</div>`;
+    const minimo = env.esVecino ? ENVIO.minimoVecino : ENVIO.pedidoMinimo;
+    const textoZona = env.esVecino ? '(vecino)' : '';
+    aviso.innerHTML = `<div class="aviso-minimo">⚠️ Pedido mínimo Bs ${fmt(minimo)} ${textoZona} para delivery. Te faltan Bs ${fmt(minimo - subtotal)}.</div>`;
     btn.disabled = true;
     document.getElementById('totalBs').textContent = fmt(subtotal);
   } else {
@@ -656,12 +712,19 @@ document.getElementById('btnEnviar').addEventListener('click', () => {
   const ids = Object.keys(carrito).filter(id => CONFIG.productos.find(p => p.id === id));
   if (!ids.length) return alert('Agrega al menos un producto a tu pedido.');
 
+  const nombresAnillo = {
+    '0': 'Vecino (misma cuadra)',
+    '1': 'Anillo 1 · Centro',
+    '2': 'Anillo 2 · Alrededores',
+    '3': 'Fuera del Anillo 2 (a consultar)'
+  };
+
   let subtotal = 0;
   let m = '🥟 *NUEVO PEDIDO — Hogareño* 🥟\n\n';
   m += '👤 *Cliente:* ' + cliente + '\n';
   m += '📞 *Teléfono:* ' + telefono + '\n';
   m += '📅 *Para el:* ' + fecha.toLocaleString('es-BO', { dateStyle: 'full', timeStyle: 'short' }) + '\n';
-  m += '🛵 *Zona:* Anillo ' + anillo + ' de Warnes\n';
+  m += '🛵 *Zona:* ' + (nombresAnillo[anillo] || anillo) + '\n';
   m += '🏠 *Dirección:* ' + direccion + '\n';
   m += '\n🛒 *Productos:*\n';
   ids.forEach(id => {
@@ -672,13 +735,19 @@ document.getElementById('btnEnviar').addEventListener('click', () => {
 
   const env = calcularEnvio(subtotal);
   m += '\n📦 *Subtotal:* Bs ' + fmt(subtotal) + '\n';
-  if (env.costo === 0) {
+  if (env.aConsultar) {
+    m += '🛵 *Envío:* A CONSULTAR (zona fuera del Anillo 2)\n';
+    m += '💰 *TOTAL productos:* Bs ' + fmt(subtotal) + '\n';
+    m += '⚠️ _El costo de envío lo coordinamos por acá._\n';
+  } else if (env.costo === 0) {
     m += '🛵 *Envío:* GRATIS 🎉\n';
+    m += '💰 *TOTAL: Bs ' + fmt(subtotal) + '*\n';
   } else if (env.costo) {
-    m += '🛵 *Envío (Anillo ' + anillo + '):* Bs ' + fmt(env.costo) + '\n';
+    m += '🛵 *Envío:* Bs ' + fmt(env.costo) + '\n';
+    m += '💰 *TOTAL: Bs ' + fmt(subtotal + env.costo) + '*\n';
   }
-  m += '💰 *TOTAL: Bs ' + fmt(subtotal + (env.costo || 0)) + '*\n';
-  if (notas) m += '\n📝 *Notas:* ' + notas + '\n';
+  if (notas) m += '\n📝 *Consulta del cliente:* ' + notas + '\n';
+  m += '\n📌 _El precio del envío puede variar según la zona. Si quieres coordinar un ajuste, respóndeme este mensaje._\n';
   m += '\n¡Gracias por preferirnos! 🧡';
   window.open(wspLink(m), '_blank');
 });
@@ -688,8 +757,8 @@ document.getElementById('anio').textContent = new Date().getFullYear();
 
 // ============ INICIO ============
 aplicarTextos();
-cargarEnvio();       // Primero cargamos las tarifas
-cargarProductos();   // Y en paralelo los productos
+cargarEnvio();
+cargarProductos();
 renderCarrito();
 </script>
 </body>
