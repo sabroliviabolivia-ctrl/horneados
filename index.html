@@ -250,7 +250,9 @@ footer .copy { font-size: .78rem; margin-top: 22px; opacity: .85 }
     <h3>Nuestro menú casero</h3>
     <p>Todo preparado al horno con ingredientes frescos de la región. Elige cuántas unidades necesitas de cada uno.</p>
   </div>
-  <div class="grid-productos" id="gridProductos"></div>
+  <div class="grid-productos" id="gridProductos">
+    <p class="vacio">Cargando productos...</p>
+  </div>
 </section>
 
 <section id="eventos" class="eventos">
@@ -332,13 +334,14 @@ const IMGS = {
   "logo":  RAW("logo-hogareno.jpg"),
   "hero1": RAW("hero-1.jpg"),
   "hero2": RAW("hero-2.jpg"),
-  "pollo": RAW("empanada-de-pollo.jpg") // para la foto del hero
+  "pollo": RAW("empanada-de-pollo.jpg")
 };
 
 // =====================================================================
-//  URL DE TU GOOGLE SHEETS PUBLICADA COMO CSV
+//  TU GOOGLE SHEETS (método gviz — no necesita proxies)
 // =====================================================================
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRyn3cRZR_4F92FSKz-AkZJHYTl6OYKohdQBWl8VKLg20QEihXe833aitJGbYaia-lSZhttDRyEJivk/pub?gid=0&single=true&output=csv';
+const SHEET_ID   = '1RORFaPQ04cgANe-OQFTx1phz2VUDCpB0iXSrC4dkXJg';
+const SHEET_NAME = 'productos'; // El nombre de la pestaña (visible en tu captura)
 
 const CONFIG = {
   wsp: '59168861432',
@@ -347,52 +350,59 @@ const CONFIG = {
   productos: []
 };
 
-// ============ PARSEO DE CSV ============
-function parseCSV(csvText) {
-  const lines = csvText.trim().split('\n').map(line => line.trim()).filter(Boolean);
-  if (lines.length < 2) return [];
-  const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-  const data = [];
-  for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(',').map(v => v.trim());
-    if (values.length === headers.length) {
-      const obj = {};
-      headers.forEach((header, index) => { obj[header] = values[index]; });
-      data.push(obj);
-    }
-  }
-  return data;
-}
-
-// ============ CARGA DESDE GOOGLE SHEETS ============
+// ============ CARGA DESDE GOOGLE SHEETS (gviz / JSON) ============
 async function cargarProductos() {
+  // Endpoint interno de Google: devuelve JSON público (sin CORS ni proxies)
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+
   try {
-    const proxyUrl = 'https://api.allorigins.win/raw?url=';
-    const response = await fetch(proxyUrl + encodeURIComponent(CSV_URL));
-    if (!response.ok) throw new Error('No se pudo obtener la hoja de cálculo.');
-    const csvText = await response.text();
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    let text = await res.text();
 
-    const productosData = parseCSV(csvText);
-    if (productosData.length === 0) throw new Error('La hoja está vacía o mal formateada.');
+    // Google envuelve la respuesta: /*O_o*/ google.visualization.Query.setResponse({...});
+    // Extraemos solo el JSON interior.
+    const first = text.indexOf('{');
+    const last  = text.lastIndexOf('}');
+    if (first === -1 || last === -1) throw new Error('Respuesta no válida de Google');
+    const json = JSON.parse(text.substring(first, last + 1));
 
-    CONFIG.productos = productosData
-      .map(p => ({
-        id: p.id,
-        nombre: p.nombre,
-        desc: p.descripcion,
-        precio: parseFloat(p.precio) || 0,
-        badge: p.badge,
-        img: p.img, // URL completa desde Sheets
-        activo: String(p.activo).toUpperCase() === 'TRUE' || p.activo === '1'
-      }))
-      .filter(p => p.activo);
+    const rows = json?.table?.rows || [];
+    if (rows.length === 0) throw new Error('La hoja no tiene filas de datos.');
 
+    // Cada fila tiene: { c: [ {v:'...'}, {v:'...'}, ... ] }
+    // El orden de las columnas es el de tu hoja: id, nombre, descripcion, precio, badge, img, activo
+    CONFIG.productos = rows
+      .map(r => {
+        const c = r.c || [];
+        return {
+          id:     c[0]?.v != null ? String(c[0].v).trim() : '',
+          nombre: c[1]?.v != null ? String(c[1].v).trim() : '',
+          desc:   c[2]?.v != null ? String(c[2].v).trim() : '',
+          precio: parseFloat(c[3]?.v) || 0,
+          badge:  c[4]?.v != null ? String(c[4].v).trim() : '',
+          img:    c[5]?.v != null ? String(c[5].v).trim() : '',
+          activo: (() => {
+            const a = c[6]?.v;
+            if (typeof a === 'boolean') return a;
+            return String(a).toUpperCase() === 'TRUE' || a === 1 || a === '1';
+          })()
+        };
+      })
+      .filter(p => p.activo && p.id && p.nombre);
+
+    if (CONFIG.productos.length === 0) {
+      throw new Error('No hay productos activos en la hoja.');
+    }
+
+    console.log(`✅ ${CONFIG.productos.length} productos cargados desde Google Sheets`);
     renderMenu();
     renderCarrito();
 
-  } catch (error) {
-    console.error('Error al cargar los productos:', error);
-    document.getElementById('gridProductos').innerHTML = '<p class="vacio">No se pudo cargar el menú. Inténtalo de nuevo más tarde.</p>';
+  } catch (err) {
+    console.error('Error al cargar productos desde Google Sheets:', err);
+    document.getElementById('gridProductos').innerHTML =
+      '<p class="vacio">No se pudo cargar el menú. Verifica que la hoja esté publicada y recarga la página.</p>';
   }
 }
 
