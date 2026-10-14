@@ -333,7 +333,7 @@ const RAW = (file) => `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB
 const IMGS = {
   "logo":  RAW("logo-hogareno.jpg"),
   "hero1": RAW("hero-1.jpg"),
-  "hero2": RAW("hero-2.jpg"),
+  "hero2": RAW("cunape.jpg"),   // <-- ¡CAMBIADO! Ahora usa cunape.jpg
   "pollo": RAW("empanada-de-pollo.jpg")
 };
 
@@ -341,7 +341,7 @@ const IMGS = {
 //  TU GOOGLE SHEETS (método gviz — no necesita proxies)
 // =====================================================================
 const SHEET_ID   = '1RORFaPQ04cgANe-OQFTx1phz2VUDCpB0iXSrC4dkXJg';
-const SHEET_NAME = 'productos'; // El nombre de la pestaña (visible en tu captura)
+const SHEET_NAME = 'productos';
 
 const CONFIG = {
   wsp: '59168861432',
@@ -352,7 +352,6 @@ const CONFIG = {
 
 // ============ CARGA DESDE GOOGLE SHEETS (gviz / JSON) ============
 async function cargarProductos() {
-  // Endpoint interno de Google: devuelve JSON público (sin CORS ni proxies)
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
 
   try {
@@ -360,8 +359,6 @@ async function cargarProductos() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     let text = await res.text();
 
-    // Google envuelve la respuesta: /*O_o*/ google.visualization.Query.setResponse({...});
-    // Extraemos solo el JSON interior.
     const first = text.indexOf('{');
     const last  = text.lastIndexOf('}');
     if (first === -1 || last === -1) throw new Error('Respuesta no válida de Google');
@@ -370,8 +367,6 @@ async function cargarProductos() {
     const rows = json?.table?.rows || [];
     if (rows.length === 0) throw new Error('La hoja no tiene filas de datos.');
 
-    // Cada fila tiene: { c: [ {v:'...'}, {v:'...'}, ... ] }
-    // El orden de las columnas es el de tu hoja: id, nombre, descripcion, precio, badge, img, activo
     CONFIG.productos = rows
       .map(r => {
         const c = r.c || [];
